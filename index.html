@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOTOTAXI RUSH - Prototipo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: #1a1a2e;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-title {
+            color: #ffd700;
+            font-size: 2.5em;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            background: #16213e;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-label {
+            color: #ffd700;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            color: #fff;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .reels-container {
+            background: linear-gradient(180deg, #0f3460 0%, #16213e 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reels {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .reel {
+            background: #1a1a2e;
+            border-radius: 10px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            border: 3px solid #ffd700;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reel.spinning {
+            animation: spin 0.5s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-100px); }
+        }
+
+        .symbol {
+            font-size: 3em;
+            transition: transform 0.3s;
+        }
+
+        .symbol.win {
+            animation: winPulse 0.5s;
+        }
+
+        @keyframes winPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-spin {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .btn-spin:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255,107,107,0.5);
+        }
+
+        .btn-spin:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-bet {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .btn-bet:hover {
+            transform: scale(1.05);
+        }
+
+        .win-message {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideDown 0.5s;
+        }
+
+        .win-message.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .win-text {
+            font-size: 1.5em;
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+
+        .bonus-feature {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 15px;
+            z-index: 100;
+        }
+
+        .bonus-feature.show {
+            display: flex;
+        }
+
+        .bonus-content {
+            text-align: center;
+            color: #ffd700;
+        }
+
+        .bonus-title {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .mototaxi-options {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .mototaxi-btn {
+            padding: 20px;
+            background: #16213e;
+            border: 3px solid #ffd700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .mototaxi-btn:hover {
+            transform: scale(1.1);
+            background: #ffd700;
+            color: #1a1a2e;
+        }
+
+        .paytable {
+            background: #16213e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .paytable-title {
+            color: #ffd700;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .paytable-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #0f3460;
+            color: #fff;
+        }
+
+        .symbols-legend {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .symbol-item {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 10px;
+            color: #fff;
+        }
+
+        .symbol-icon {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .symbol-name {
+            font-size: 0.9em;
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">🏍️ MOTOTAXI RUSH 🏍️</h1>
+            <p style="color: #fff; margin-top: 10px;">Prototipo de Demostración</p>
+        </div>
+
+        <div class="game-info">
+            <div class="info-item">
+                <div class="info-label">Saldo</div>
+                <div class="info-value" id="balance">S/ 1,000.00</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Apuesta</div>
+                <div class="info-value" id="bet">S/ 10.00</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Última Ganancia</div>
+                <div class="info-value" id="lastWin">S/ 0.00</div>
+            </div>
+        </div>
+
+        <div class="reels-container">
+            <div class="reels" id="reels">
+                <div class="reel" id="reel1"><div class="symbol">🏍️</div></div>
+                <div class="reel" id="reel2"><div class="symbol">💰</div></div>
+                <div class="reel" id="reel3"><div class="symbol">🎩</div></div>
+                <div class="reel" id="reel4"><div class="symbol">👤</div></div>
+                <div class="reel" id="reel5"><div class="symbol">🏍️</div></div>
+            </div>
+        </div>
+
+        <div class="win-message" id="winMessage">
+            <div class="win-text" id="winText">¡Ganaste!</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-bet" onclick="changeBet()">Cambiar Apuesta</button>
+            <button class="btn btn-spin" id="spinBtn" onclick="spin()">🎰 GIRAR</button>
+        </div>
+
+        <div class="bonus-feature" id="bonusFeature">
+            <div class="bonus-content">
+                <h2 class="bonus-title">🏁 CARRERA CALLEJERA 🏁</h2>
+                <p style="color: #fff; margin-bottom: 20px;">Elige tu mototaxi para la carrera:</p>
+                <div class="mototaxi-options">
+                    <div class="mototaxi-btn" onclick="selectMototaxi('red')">
+                        🏍️ Roja<br>
+                        <small>2x-10x</small>
+                    </div>
+                    <div class="mototaxi-btn" onclick="selectMototaxi('blue')">
+                        🏍️ Azul<br>
+                        <small>5x-20x</small>
+                    </div>
+                    <div class="mototaxi-btn" onclick="selectMototaxi('gold')">
+                        🏍️ Dorada<br>
+                        <small>10x-50x</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="symbols-legend">
+            <div class="symbol-item">
+                <div class="symbol-icon">🏍️</div>
+                <div class="symbol-name">Mototaxista<br>(Wild)</div>
+            </div>
+            <div class="symbol-item">
+                <div class="symbol-icon">👤</div>
+                <div class="symbol-name">Pasajero</div>
+            </div>
+            <div class="symbol-item">
+                <div class="symbol-icon">🛒</div>
+                <div class="symbol-name">Vendedor</div>
+            </div>
+            <div class="symbol-item">
+                <div class="symbol-icon">🎒</div>
+                <div class="symbol-name">Turista</div>
+            </div>
+            <div class="symbol-item">
+                <div class="symbol-icon">💰</div>
+                <div class="symbol-name">Monedas</div>
+            </div>
+        </div>
+
+        <div class="paytable">
+            <div class="paytable-title">💰 Tabla de Pagos (5 símbolos)</div>
+            <div class="paytable-item">
+                <span>🏍️ Mototaxista (Wild)</span>
+                <span>150x</span>
+            </div>
+            <div class="paytable-item">
+                <span>🎒 Turista</span>
+                <span>100x</span>
+            </div>
+            <div class="paytable-item">
+                <span>🛒 Vendedor</span>
+                <span>75x</span>
+            </div>
+            <div class="paytable-item">
+                <span>👤 Pasajero</span>
+                <span>50x</span>
+            </div>
+            <div class="paytable-item">
+                <span>💰 Monedas</span>
+                <span>8x</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const symbols = ['🏍️', '👤', '🛒', '🎒', '💰', '🎩', '🛡️', '🚩'];
+        const symbolNames = {
+            '🏍️': 'Mototaxista',
+            '👤': 'Pasajero',
+            '🛒': 'Vendedor',
+            '🎒': 'Turista',
+            '💰': 'Monedas',
+            '🎩': 'Sombrero',
+            '🛡️': 'Casco',
+            '🚩': 'Bandera'
+        };
+
+        const payouts = {
+            '🏍️': { 3: 6, 4: 40, 5: 150 },
+            '🎒': { 3: 5, 4: 30, 5: 100 },
+            '🛒': { 3: 4, 4: 20, 5: 75 },
+            '👤': { 3: 3, 4: 15, 5: 50 },
+            '💰': { 3: 0.5, 4: 2, 5: 8 },
+            '🎩': { 3: 1.2, 4: 5, 5: 18 },
+            '🛡️': { 3: 2, 4: 8, 5: 25 },
+            '🚩': { 3: 0.8, 4: 3, 5: 12 }
+        };
+
+        let balance = 1000;
+        let bet = 10;
+        let isSpinning = false;
+
+        function updateDisplay() {
+            document.getElementById('balance').textContent = `S/ ${balance.toFixed(2)}`;
+            document.getElementById('bet').textContent = `S/ ${bet.toFixed(2)}`;
+        }
+
+        function changeBet() {
+            if (isSpinning) return;
+            const bets = [5, 10, 20, 50, 100];
+            const currentIndex = bets.indexOf(bet);
+            bet = bets[(currentIndex + 1) % bets.length];
+            updateDisplay();
+        }
+
+        function getRandomSymbol() {
+            return symbols[Math.floor(Math.random() * symbols.length)];
+        }
+
+        function checkWin(reels) {
+            let totalWin = 0;
+            const winLines = [
+                [0, 1, 2, 3, 4], // Línea central
+                [0, 1, 2, 3, 4], // Línea superior (simplificado)
+                [0, 1, 2, 3, 4]  // Línea inferior (simplificado)
+            ];
+
+            // Verificar combinaciones de 3, 4 o 5 símbolos iguales
+            const symbolCounts = {};
+            reels.forEach(symbol => {
+                symbolCounts[symbol] = (symbolCounts[symbol] || 0) + 1;
+            });
+
+            for (const [symbol, count] of Object.entries(symbolCounts)) {
+                if (count >= 3 && payouts[symbol]) {
+                    const payout = payouts[symbol][Math.min(count, 5)] || 0;
+                    totalWin += payout * bet;
+                }
+            }
+
+            return totalWin;
+        }
+
+        function spin() {
+            if (isSpinning || balance < bet) {
+                alert('Saldo insuficiente o juego en curso');
+                return;
+            }
+
+            isSpinning = true;
+            balance -= bet;
+            updateDisplay();
+
+            const spinBtn = document.getElementById('spinBtn');
+            spinBtn.disabled = true;
+            spinBtn.textContent = 'GIRANDO...';
+
+            // Animar los carretes
+            const reelElements = document.querySelectorAll('.reel');
+            reelElements.forEach(reel => {
+                reel.classList.add('spinning');
+            });
+
+            // Generar resultado después de la animación
+            setTimeout(() => {
+                const result = [];
+                reelElements.forEach((reel, index) => {
+                    reel.classList.remove('spinning');
+                    const symbol = getRandomSymbol();
+                    result.push(symbol);
+                    reel.innerHTML = `<div class="symbol">${symbol}</div>`;
+                });
+
+                // Verificar ganancia
+                const win = checkWin(result);
+                const bonusChance = Math.random();
+
+                if (bonusChance < 0.1) {
+                    // 10% chance de bonus
+                    setTimeout(() => {
+                        showBonus();
+                    }, 1000);
+                } else if (win > 0) {
+                    balance += win;
+                    showWin(win);
+                } else {
+                    document.getElementById('lastWin').textContent = 'S/ 0.00';
+                }
+
+                updateDisplay();
+                isSpinning = false;
+                spinBtn.disabled = false;
+                spinBtn.textContent = '🎰 GIRAR';
+            }, 2000);
+        }
+
+        function showWin(amount) {
+            const winMessage = document.getElementById('winMessage');
+            const winText = document.getElementById('winText');
+            winText.textContent = `¡Ganaste S/ ${amount.toFixed(2)}! 🎉`;
+            winMessage.classList.add('show');
+            document.getElementById('lastWin').textContent = `S/ ${amount.toFixed(2)}`;
+
+            // Resaltar símbolos ganadores
+            document.querySelectorAll('.symbol').forEach(symbol => {
+                symbol.classList.add('win');
+            });
+
+            setTimeout(() => {
+                winMessage.classList.remove('show');
+                document.querySelectorAll('.symbol').forEach(symbol => {
+                    symbol.classList.remove('win');
+                });
+            }, 3000);
+        }
+
+        function showBonus() {
+            const bonusFeature = document.getElementById('bonusFeature');
+            bonusFeature.classList.add('show');
+        }
+
+        function selectMototaxi(type) {
+            const multipliers = {
+                'red': { min: 2, max: 10 },
+                'blue': { min: 5, max: 20 },
+                'gold': { min: 10, max: 50 }
+            };
+
+            const mult = multipliers[type];
+            const multiplier = Math.floor(Math.random() * (mult.max - mult.min + 1)) + mult.min;
+            const bonusWin = bet * multiplier;
+
+            balance += bonusWin;
+            updateDisplay();
+
+            const bonusFeature = document.getElementById('bonusFeature');
+            bonusFeature.classList.remove('show');
+
+            setTimeout(() => {
+                showWin(bonusWin);
+                alert(`¡Carrera exitosa! Multiplicador: ${multiplier}x\nGanaste: S/ ${bonusWin.toFixed(2)}`);
+            }, 500);
+        }
+
+        // Inicializar
+        updateDisplay();
+    </script>
+</body>
+</html>
+

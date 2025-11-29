@@ -53,3 +53,4 @@ Write-Host ""
 
 Write-Host "✅ Verificación completada" -ForegroundColor Green
 
+
